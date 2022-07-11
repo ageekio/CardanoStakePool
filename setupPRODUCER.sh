@@ -8,10 +8,10 @@ HOSTNAME="producer01"
 SSH_PORT="2376"
 TIME_PORT="123"
 SSH_ADDR="0.0.0.0"
-RELAY_NODE="38.242.137.213"
-ADMIN_USER="io"
+RELAY_ADDR="<RELAY IP HERE>"
+ADMIN_USER="<ADMIN USER HERE>"
 CNODE_USER="cardano"
-SSH_KEY="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMfBPPLwv3gzk/QySo/eOeRshr32rSarpWre4tPy0WC5 mr@itchains.net"
+SSH_KEY="<YOUR SSH KEY HERE>"
 
 # No need to change beyond this point - but you can if you must :-)
 
@@ -97,40 +97,10 @@ useradd -m -s /bin/bash $CNODE_USER
 usermod -aG sudo $CNODE_USER
 passwd $CNODE_USER
 
-mkdir -p /opt/cardano/config /opt/cardano/db /opt/cardano/tmp
-chown -R cardano:cardano /opt/cardano
-
-# Testnet Config
-cd /opt/cardano/config
-wget https://hydra.iohk.io/build/8111119/download/1/testnet-config.json
-wget https://hydra.iohk.io/build/8111119/download/1/testnet-db-sync-config.json
-wget https://hydra.iohk.io/build/8111119/download/1/testnet-topology.json
-wget https://hydra.iohk.io/build/8111119/download/1/rest-config.json
-wget https://hydra.iohk.io/build/8111119/download/1/testnet-alonzo-genesis.json
-wget https://hydra.iohk.io/build/8111119/download/1/testnet-shelley-genesis.json
-wget https://hydra.iohk.io/build/8111119/download/1/testnet-byron-genesis.json
-
-# Mainnet Config
-wget https://hydra.iohk.io/build/8111119/download/1/mainnet-config.json
-wget https://hydra.iohk.io/build/8111119/download/1/mainnet-byron-genesis.json
-wget https://hydra.iohk.io/build/8111119/download/1/mainnet-shelley-genesis.json
-wget https://hydra.iohk.io/build/8111119/download/1/mainnet-alonzo-genesis.json
-wget https://hydra.iohk.io/build/8111119/download/1/mainnet-topology.json
-wget https://hydra.iohk.io/build/8111119/download/1/mainnet-db-sync-config.json
-wget https://hydra.iohk.io/build/8111119/download/1/rest-config.json
-
-# Download Live view statistics
-cd /opt/cardano
-curl -s -o gLiveView.sh https://raw.githubusercontent.com/cardano-community/guild-operators/master/scripts/cnode-helper-scripts/gLiveView.sh
-curl -s -o env https://raw.githubusercontent.com/cardano-community/guild-operators/master/scripts/cnode-helper-scripts/env
-chown $(echo "$ADMIN_USER:$ADMIN_USER")
-chmod 755 gLiveView.sh
-
-cd /opt/cardano/tmp
-wget https://hydra.iohk.io/build/16159630/download/1/cardano-node-1.35.0-linux.tar.gz
-tar xvfz cardano-node-1.35.0-linux.tar.gz
-rm -f cardano-node-1.35.0-linux.tar.gz
-cp * /usr/local/bin
+mkdir "$HOME/tmp";cd "$HOME/tmp"
+curl -sS -o prereqs.sh https://raw.githubusercontent.com/cardano-community/guild-operators/master/scripts/cnode-helper-scripts/prereqs.sh
+chmod 755 prereqs.sh
+./prereqs.sh
 
 chown -R $(echo "$CNODE_USER:$CNODE_USER") /opt/cardano
 
@@ -147,8 +117,7 @@ RestartSec=20
 User=cardano
 LimitNOFILE=131072
 WorkingDirectory=/opt/cardano
-#EnvironmentFile=/opt/cardano/testnet.environment
-ExecStart=cardano-node run +RTS -N -A16m -qg -qb -RTS --topology /opt/cardano/config/testnet-topology.json --config /opt/cardano/config/testnet-config.json --database-path /opt/cardano/db --socket-path /opt/cardano/db/socket --host-addr 0.0.0.0 --port 6000
+ExecStart=cardano-node run +RTS -N -A16m -qg -qb -RTS --topology /opt/cardano/files/testnet-topology.json --config /opt/cardano/files/testnet-config.json --database-path /opt/cardano/db --socket-path /opt/cardano/db/socket --host-addr 0.0.0.0 --port 6000
 KillSignal=SIGINT
 StandardOutput=syslog
 StandardError=syslog
